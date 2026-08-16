@@ -2,160 +2,687 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>NL2SQL Assistant</title>
 
     <style>
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        .container {
-            width: 800px;
-            margin: 60px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        body {
+            font-family: Inter, Arial, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.22), transparent 30%),
+                radial-gradient(circle at 90% 20%, rgba(14, 165, 233, 0.18), transparent 30%),
+                #080b14;
+            color: #f8fafc;
         }
 
-        h1 {
+        .app {
+            width: min(1100px, 94%);
+            margin: 0 auto;
+            padding: 35px 0 50px;
+        }
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 23px;
+            background: linear-gradient(135deg, #6366f1, #06b6d4);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.35);
+        }
+
+        .brand h1 {
+            font-size: 22px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 30px;
+            background: rgba(255,255,255,0.04);
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        /* HERO */
+
+        .hero {
             text-align: center;
-            color: #222;
+            margin-bottom: 28px;
+        }
+
+        .hero h2 {
+            font-size: clamp(32px, 5vw, 52px);
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: 14px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #818cf8, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* QUESTION BOX */
+
+        .query-card {
+            padding: 22px;
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 20px;
+            background: rgba(15, 23, 42, 0.78);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
         }
 
         textarea {
             width: 100%;
-            height: 100px;
-            padding: 12px;
-            font-size: 16px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            resize: none;
-        }
-
-        button {
-            margin-top: 15px;
-            width: 100%;
-            padding: 14px;
-            font-size: 16px;
-            background: #2563eb;
-            color: white;
+            min-height: 125px;
+            resize: vertical;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            outline: none;
+            background: transparent;
+            color: #f8fafc;
+            font-size: 17px;
+            line-height: 1.6;
+            font-family: inherit;
         }
 
-        button:hover {
-            background: #1d4ed8;
+        textarea::placeholder {
+            color: #64748b;
         }
 
-        .section {
-            margin-top: 25px;
+        .query-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.07);
         }
 
-        .answer {
-            background: #eef6ff;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 18px;
+        .hint {
+            color: #64748b;
+            font-size: 12px;
         }
 
-        pre {
-            background: #1e293b;
+        .ask-btn {
+            border: none;
+            border-radius: 11px;
+            padding: 13px 22px;
             color: white;
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #6366f1, #0891b2);
+            box-shadow: 0 8px 25px rgba(79,70,229,0.28);
+            transition: 0.2s;
         }
+
+        .ask-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(79,70,229,0.4);
+        }
+
+        .ask-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* EXAMPLES */
+
+        .examples {
+            margin: 18px 0 30px;
+        }
+
+        .examples-title {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+        .chip {
+            padding: 9px 13px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.035);
+            color: #cbd5e1;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .chip:hover {
+            background: rgba(99,102,241,0.13);
+            border-color: rgba(129,140,248,0.4);
+            color: white;
+        }
+
+        /* LOADING */
 
         .loading {
             display: none;
-            margin-top: 15px;
             text-align: center;
+            padding: 25px;
+            color: #94a3b8;
         }
 
-    </style>
+        .spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255,255,255,0.12);
+            border-top-color: #818cf8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 10px;
+        }
 
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* RESULTS */
+
+        #results {
+            display: none;
+        }
+
+        .answer-card {
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(34,211,238,0.18);
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(30,41,59,0.9),
+                    rgba(15,23,42,0.92)
+                );
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            margin-bottom: 18px;
+        }
+
+        .card-label {
+            color: #67e8f9;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .answer {
+            font-size: 21px;
+            line-height: 1.5;
+            color: #f8fafc;
+        }
+
+        /* TWO COLUMN */
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .result-card {
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(15,23,42,0.78);
+            overflow: hidden;
+        }
+
+        .result-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-header h3 {
+            font-size: 14px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background: rgba(99,102,241,0.12);
+            color: #a5b4fc;
+        }
+
+        pre {
+            margin: 0;
+            padding: 18px;
+            overflow-x: auto;
+            min-height: 150px;
+            max-height: 350px;
+            color: #cbd5e1;
+            font-size: 12px;
+            line-height: 1.7;
+            background: #0b1120;
+            white-space: pre-wrap;
+        }
+
+        /* TABLE */
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 13px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+        }
+
+        th {
+            color: #94a3b8;
+            font-weight: 600;
+            background: rgba(255,255,255,0.025);
+        }
+
+        td {
+            color: #e2e8f0;
+        }
+
+        /* ERROR */
+
+        .error {
+            display: none;
+            margin-top: 15px;
+            padding: 13px 15px;
+            border-radius: 10px;
+            color: #fecaca;
+            background: rgba(127,29,29,0.3);
+            border: 1px solid rgba(248,113,113,0.2);
+            font-size: 13px;
+        }
+
+        /* FOOTER */
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #475569;
+            font-size: 12px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 750px) {
+
+            .header {
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .status {
+                display: none;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .query-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .ask-btn {
+                width: 100%;
+            }
+
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-    <h1>NL2SQL Assistant</h1>
+    <!-- HEADER -->
 
-    <textarea
-        id="question"
-        placeholder="Ask a question about your data...">
-    </textarea>
+    <header class="header">
 
-    <button onclick="askQuestion()">
-        Ask Question
-    </button>
+        <div class="brand">
 
-    <div class="loading" id="loading">
-        Processing your question...
-    </div>
+            <div class="logo">
+                ✦
+            </div>
 
-    <div class="section">
+            <div>
+                <h1>NL2SQL Assistant</h1>
+                <p>Natural language → intelligent database queries</p>
+            </div>
 
-        <h2>Answer</h2>
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            PostgreSQL Connected
+        </div>
+
+    </header>
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <h2>
+            Ask your
+            <span class="gradient-text">database anything.</span>
+        </h2>
+
+        <p>
+            Ask questions in plain English and let AI generate and execute SQL for you.
+        </p>
+
+    </section>
+
+
+    <!-- QUERY -->
+
+    <section class="query-card">
+
+        <textarea
+            id="question"
+            placeholder="e.g. Which region generated the highest sales?"
+        ></textarea>
+
+        <div class="query-footer">
+
+            <span class="hint">
+                Powered by RAG + LLM + PostgreSQL
+            </span>
+
+            <button
+                class="ask-btn"
+                id="askButton"
+                onclick="askQuestion()"
+            >
+                ✦ Ask Database
+            </button>
+
+        </div>
 
         <div
-            class="answer"
-            id="answer">
-            Your answer will appear here.
+            class="error"
+            id="error"
+        ></div>
+
+    </section>
+
+
+    <!-- EXAMPLES -->
+
+    <section class="examples">
+
+        <div class="examples-title">
+            TRY AN EXAMPLE
+        </div>
+
+        <div class="chips">
+
+            <button
+                class="chip"
+                onclick="setQuestion('Which region generated the highest sales?')"
+            >
+                🏆 Top region
+            </button>
+
+            <button
+                class="chip"
+                onclick="setQuestion('Which product generated the highest sales?')"
+            >
+                📦 Top product
+            </button>
+
+            <button
+                class="chip"
+                onclick="setQuestion('Which customer spent the most?')"
+            >
+                👤 Top customer
+            </button>
+
+            <button
+                class="chip"
+                onclick="setQuestion('How many completed sales transactions are there?')"
+            >
+                📊 Transaction count
+            </button>
+
+            <button
+                class="chip"
+                onclick="setQuestion('What were the total completed sales in July 2026?')"
+            >
+                📅 July sales
+            </button>
+
+            <button
+                class="chip"
+                onclick="setQuestion('Show the total completed sales for each region.')"
+            >
+                🌎 Sales by region
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- LOADING -->
+
+    <div
+        class="loading"
+        id="loading"
+    >
+
+        <div class="spinner"></div>
+
+        <div>
+            Analyzing your question and querying the database...
         </div>
 
     </div>
 
-    <div class="section">
 
-        <h2>Generated SQL</h2>
+    <!-- RESULTS -->
 
-        <pre id="sql">
-        </pre>
+    <section id="results">
 
-    </div>
+        <!-- ANSWER -->
 
-    <div class="section">
+        <div class="answer-card">
 
-        <h2>Database Result</h2>
+            <div class="card-label">
+                ✦ AI Answer
+            </div>
 
-        <pre id="result">
-        </pre>
+            <div
+                class="answer"
+                id="answer"
+            >
+            </div>
 
-    </div>
+        </div>
+
+
+        <!-- SQL + RESULT -->
+
+        <div class="grid">
+
+            <!-- SQL -->
+
+            <div class="result-card">
+
+                <div class="result-header">
+
+                    <h3>Generated SQL</h3>
+
+                    <span class="badge">
+                        READ ONLY
+                    </span>
+
+                </div>
+
+                <pre id="sql"></pre>
+
+            </div>
+
+
+            <!-- DATABASE RESULT -->
+
+            <div class="result-card">
+
+                <div class="result-header">
+
+                    <h3>Database Result</h3>
+
+                    <span class="badge">
+                        PostgreSQL
+                    </span>
+
+                </div>
+
+                <div
+                    class="table-container"
+                    id="tableContainer"
+                >
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+        NL2SQL Assistant · RAG · OpenAI · pgvector · PostgreSQL · FastAPI
+    </footer>
 
 </div>
 
+
 <script>
+
+function setQuestion(question) {
+
+    document.getElementById("question").value = question;
+
+    document.getElementById("question").focus();
+
+}
+
 
 async function askQuestion() {
 
     const question =
-        document.getElementById("question").value;
+        document.getElementById("question").value.trim();
 
-    if (!question.trim()) {
+    const loading =
+        document.getElementById("loading");
 
-        alert("Please enter a question.");
+    const results =
+        document.getElementById("results");
+
+    const error =
+        document.getElementById("error");
+
+    const button =
+        document.getElementById("askButton");
+
+
+    if (!question) {
+
+        error.innerText =
+            "Please enter a question first.";
+
+        error.style.display = "block";
 
         return;
     }
 
-    document.getElementById("loading")
-        .style.display = "block";
+
+    error.style.display = "none";
+
+    results.style.display = "none";
+
+    loading.style.display = "block";
+
+    button.disabled = true;
+
+    button.innerText = "⏳ Processing...";
+
 
     try {
 
@@ -174,43 +701,191 @@ async function askQuestion() {
 
             });
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Something went wrong."
+            );
+
+        }
+
 
         document.getElementById("answer")
-            .innerText = data.answer;
+            .innerText = data.answer || "No answer returned.";
+
 
         document.getElementById("sql")
-            .innerText = data.sql;
+            .innerText = data.sql || "No SQL generated.";
 
-        document.getElementById("result")
-            .innerText =
-            JSON.stringify(
-                data.rows,
-                null,
-                2
-            );
+
+        createResultTable(
+            data.columns || [],
+            data.rows || []
+        );
+
+
+        results.style.display = "block";
+
+
+        results.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
 
     }
 
-    catch (error) {
+    catch (err) {
 
-        document.getElementById("answer")
-            .innerText =
-            "Error: " + error.message;
+        error.innerText =
+            "Error: " + err.message;
+
+        error.style.display = "block";
 
     }
 
     finally {
 
-        document.getElementById("loading")
-            .style.display = "none";
+        loading.style.display = "none";
+
+        button.disabled = false;
+
+        button.innerText = "✦ Ask Database";
 
     }
 
 }
 
+
+function createResultTable(columns, rows) {
+
+    const container =
+        document.getElementById("tableContainer");
+
+
+    if (!columns.length || !rows.length) {
+
+        container.innerHTML =
+            "<pre>No results found.</pre>";
+
+        return;
+
+    }
+
+
+    let html = "<table>";
+
+
+    html += "<thead><tr>";
+
+
+    columns.forEach(column => {
+
+        html += `<th>${escapeHtml(column)}</th>`;
+
+    });
+
+
+    html += "</tr></thead>";
+
+
+    html += "<tbody>";
+
+
+    rows.forEach(row => {
+
+        html += "<tr>";
+
+
+        row.forEach(value => {
+
+            html += `
+                <td>
+                    ${escapeHtml(
+                        formatValue(value)
+                    )}
+                </td>
+            `;
+
+        });
+
+
+        html += "</tr>";
+
+    });
+
+
+    html += "</tbody></table>";
+
+
+    container.innerHTML = html;
+
+}
+
+
+function formatValue(value) {
+
+    if (
+        typeof value === "number" &&
+        !Number.isInteger(value)
+    ) {
+
+        return value.toLocaleString(
+            undefined,
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+    }
+
+
+    if (typeof value === "number") {
+
+        return value.toLocaleString();
+
+    }
+
+
+    return value ?? "";
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+document
+    .getElementById("question")
+    .addEventListener("keydown", function(event) {
+
+        if (
+            event.key === "Enter" &&
+            (event.ctrlKey || event.metaKey)
+        ) {
+
+            askQuestion();
+
+        }
+
+    });
+
 </script>
 
 </body>
-
 </html>
