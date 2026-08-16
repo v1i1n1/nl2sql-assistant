@@ -1,0 +1,16 @@
+TABLE: regions
+
+DESCRIPTION:
+Contains geographical regions associated with customers.
+
+COLUMNS:
+
+region_id:
+Unique identifier for each region.
+
+region_name:
+Name of the geographical region.
+
+RELATIONSHIP:
+
+regions.region_id is referenced by customers.region_id.

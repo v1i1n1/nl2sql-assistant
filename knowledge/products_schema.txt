@@ -1,0 +1,26 @@
+TABLE: products
+
+DESCRIPTION:
+Contains information about products available for sale.
+
+COLUMNS:
+
+product_id:
+Unique identifier for each product.
+
+product_name:
+Name of the product.
+
+category:
+Product category.
+
+unit_price:
+Standard price of the product.
+
+active:
+Indicates whether the product is currently active.
+
+RELATIONSHIP:
+
+Products are referenced by sales through
+sales.product_id -> products.product_id.

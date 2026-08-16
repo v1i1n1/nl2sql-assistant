@@ -1,0 +1,29 @@
+TABLE: customers
+
+DESCRIPTION:
+Contains customer information.
+
+COLUMNS:
+
+customer_id:
+Unique identifier for each customer.
+
+customer_name:
+Name of the customer.
+
+email:
+Email address associated with the customer.
+
+region_id:
+Identifier of the customer's region.
+Foreign key referencing regions.region_id.
+
+customer_type:
+Business classification of the customer.
+
+created_at:
+Timestamp indicating when the customer record was created.
+
+RELATIONSHIP:
+
+customers.region_id -> regions.region_id

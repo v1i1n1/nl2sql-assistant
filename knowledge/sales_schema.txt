@@ -1,0 +1,40 @@
+TABLE: sales
+
+DESCRIPTION:
+Contains customer sales transactions.
+
+COLUMNS:
+
+sale_id:
+Unique identifier for each sales transaction.
+
+customer_id:
+Identifier of the customer associated with the transaction.
+Foreign key referencing customers.customer_id.
+
+product_id:
+Identifier of the product associated with the transaction.
+Foreign key referencing products.product_id.
+
+amount:
+Transaction amount.
+
+sale_date:
+Date on which the sales transaction occurred.
+
+status:
+Status of the transaction.
+Expected values include completed and cancelled.
+
+RELATIONSHIPS:
+
+sales.customer_id -> customers.customer_id
+
+sales.product_id -> products.product_id
+
+BUSINESS RULE:
+Revenue and sales calculations should use the amount column
+from completed transactions.
+
+Cancelled transactions should not be included in revenue
+calculations.
