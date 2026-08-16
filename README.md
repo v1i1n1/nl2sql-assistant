@@ -721,11 +721,13 @@ Example response:
 
 ## 🖥️ Web UI
 
+The project includes a modern web interface built with HTML, CSS, and JavaScript.
+
 After starting FastAPI:
 
 ```powershell
+cd app
 uvicorn main:app --reload
-```
 
 Open:
 
@@ -836,22 +838,5 @@ Natural Language SQL
 ```text
 Version: 1.0
 Status: Working End-to-End
-```
-
-````
-
-### Then save it as:
-
-```text
-F:\NL2SQL-Assistant\README.md
-````
-
-After saving, buddy, because your previous commit was already created, run in the **VS Code terminal**:
-
-```powershell
-git status
-git add README.md
-git commit -m "Add project README"
-git push
 ```
 
