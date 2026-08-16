@@ -855,4 +855,3 @@ git commit -m "Add project README"
 git push
 ```
 
-Then refresh your GitHub repository and the README will appear on the repository homepage.
