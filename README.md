@@ -1,327 +1,119 @@
 ````markdown
-# NL2SQL Assistant
+# 🤖 NL2SQL Assistant
 
-A RAG-powered Natural Language to SQL Assistant that allows users to ask questions about business data using natural language.
+An agentic Natural Language-to-SQL Assistant that converts natural-language business questions into safe, executable PostgreSQL queries and returns business-friendly answers.
 
-The system retrieves relevant database schema information using vector similarity search, generates PostgreSQL SQL using an LLM, validates the generated SQL, executes it against PostgreSQL, and returns the result as a natural-language answer.
+The project combines **RAG, PostgreSQL, pgvector, OpenAI, Google ADK, LangGraph, PostgreSQL caching, FastAPI, and DeepEval** into an end-to-end NL2SQL system.
 
 ---
 
 ## 🚀 Project Overview
 
-Traditional database querying requires users to know SQL.
+The NL2SQL Assistant allows users to ask questions such as:
 
-This project allows users to ask questions such as:
+- Which region generated the highest sales?
+- Which region has the most customers?
+- Which product generated the highest sales?
 
-> Which region generated the highest sales?
+Instead of manually writing SQL, the system:
 
-Instead of manually writing SQL, the assistant automatically:
-
-1. Understands the user's question
-2. Retrieves relevant database schema information
+1. Understands the user's natural-language question
+2. Retrieves relevant database schema using vector similarity search
 3. Generates PostgreSQL SQL
-4. Validates the SQL for read-only execution
-5. Executes the SQL against PostgreSQL
-6. Returns the database result
-7. Presents the result in natural language
+4. Validates the SQL for safety
+5. Executes the query against PostgreSQL
+6. Caches the result for repeated questions
+7. Converts the database result into a natural-language answer
+8. Evaluates the system using DeepEval
 
 ---
 
 ## 🏗️ Architecture
 
 ```text
-                    User
-                     │
-                     ▼
-             Natural Language
-                Question
-                     │
-                     ▼
-            OpenAI Embedding
-                     │
-                     ▼
-          PostgreSQL + pgvector
-                     │
-                     ▼
-          Semantic Schema Retrieval
-                     │
-                     ▼
-             Relevant Context
-                     │
-                     ▼
-                 LLM
-                     │
-                     ▼
-             SQL Generation
-                     │
-                     ▼
-             SQL Validation
-                     │
-                     ▼
-              PostgreSQL
-                     │
-                     ▼
-               Query Result
-                     │
-                     ▼
-        Natural Language Answer
-                     │
-                     ▼
-                  Web UI
+                         USER
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │   FastAPI   │
+                    │   Web UI    │
+                    └──────┬──────┘
+                           │
+                           ▼
+                 ┌──────────────────┐
+                 │   Google ADK     │
+                 │      Agent       │
+                 └────────┬─────────┘
+                          │
+                          ▼
+                 ┌──────────────────┐
+                 │    LangGraph     │
+                 │     Workflow     │
+                 └────────┬─────────┘
+                          │
+          ┌───────────────┼────────────────┐
+          │               │                │
+          ▼               ▼                ▼
+    Schema Retrieval  SQL Generation  SQL Validation
+          │               │                │
+          ▼               ▼                │
+   PostgreSQL +      GPT-4.1-mini         │
+      pgvector                            │
+          │                                │
+          └───────────────┬────────────────┘
+                          ▼
+                  ┌───────────────┐
+                  │ SQL Execution │
+                  └───────┬───────┘
+                          │
+                          ▼
+                    PostgreSQL
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │ Answer        │
+                  │ Formatting    │
+                  └───────┬───────┘
+                          │
+                          ▼
+                  PostgreSQL Cache
+                          │
+                          ▼
+                    Final Answer
+
+                    ┌───────────┐
+                    │ DeepEval  │
+                    │ Evaluation│
+                    └───────────┘
 ````
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-* Natural language database querying
-* RAG-based schema retrieval
-* PostgreSQL integration
-* pgvector semantic similarity search
-* OpenAI embeddings
-* LLM-powered SQL generation
-* Schema-aware SQL generation
-* Business-rule-aware SQL generation
-* Read-only SQL validation
-* PostgreSQL query execution
-* Natural-language answer formatting
-* FastAPI REST API
-* Interactive Swagger API documentation
-* Web-based user interface
-* Synthetic large-scale dataset generation using Faker
-* Support for a 1-million-record sales dataset
+### 🔹 Natural Language to SQL
 
----
+Users can ask database questions using normal business language without knowing SQL.
 
-## 🛠️ Technology Stack
+### 🔹 RAG-Based Schema Retrieval
 
-| Technology          | Purpose                   |
-| ------------------- | ------------------------- |
-| Python              | Application development   |
-| PostgreSQL          | Relational database       |
-| pgvector            | Vector similarity search  |
-| OpenAI              | Embeddings and LLM        |
-| FastAPI             | Backend REST API          |
-| Psycopg             | PostgreSQL connectivity   |
-| Faker               | Synthetic data generation |
-| HTML/CSS/JavaScript | Web UI                    |
-| RAG                 | Schema retrieval          |
+Relevant database schema and business rules are retrieved using semantic similarity search before SQL generation.
 
----
+### 🔹 PostgreSQL + pgvector
 
-## 📊 Database
+PostgreSQL stores both application data and vector embeddings.
 
-The project uses PostgreSQL with the following business tables:
+`pgvector` is used for semantic similarity search over the knowledge base.
 
-```text
-regions
-customers
-products
-sales
-```
+### 🔹 OpenAI Embeddings
 
-### Dataset Size
+The project uses OpenAI embeddings with **1536-dimensional vectors** for schema retrieval.
 
-```text
-Regions       : 10
-Customers     : 100,000
-Products      : 10,000
-Sales         : 1,000,000
-```
+### 🔹 GPT-4.1-mini
 
-The project also contains a vector knowledge table:
+GPT-4.1-mini is used to generate PostgreSQL SQL queries from the user's question and retrieved database context.
 
-```text
-knowledge_embeddings
-```
-
-This table stores the embedded database schema and business-rule documents.
-
----
-
-## 🗄️ Database Schema
-
-### Regions
-
-```text
-region_id
-region_name
-```
-
-Relationship:
-
-```text
-regions.region_id
-        ↑
-customers.region_id
-```
-
----
-
-### Customers
-
-```text
-customer_id
-customer_name
-email
-region_id
-customer_type
-created_at
-```
-
-Relationship:
-
-```text
-customers.region_id
-        ↓
-regions.region_id
-```
-
----
-
-### Products
-
-```text
-product_id
-product_name
-category
-unit_price
-active
-```
-
----
-
-### Sales
-
-```text
-sale_id
-customer_id
-product_id
-amount
-sale_date
-status
-```
-
-Relationships:
-
-```text
-sales.customer_id
-        ↓
-customers.customer_id
-
-sales.product_id
-        ↓
-products.product_id
-```
-
----
-
-## 🧠 RAG Knowledge Layer
-
-Database schema information is stored as knowledge documents.
-
-Example:
-
-```text
-knowledge/
-├── customers_schema.txt
-├── products_schema.txt
-├── regions_schema.txt
-└── sales_schema.txt
-```
-
-These documents contain:
-
-* Table descriptions
-* Column descriptions
-* Relationships
-* Business rules
-
-The documents are converted into 1536-dimensional embeddings and stored in PostgreSQL using pgvector.
-
-```text
-Knowledge Document
-       ↓
-OpenAI Embedding
-       ↓
-1536-dimensional vector
-       ↓
-PostgreSQL
-       ↓
-knowledge_embeddings
-```
-
----
-
-## 🔍 Semantic Retrieval
-
-When a user asks a question, the question is converted into an embedding.
-
-The system performs vector similarity search using pgvector.
-
-Example:
-
-```text
-Question:
-
-Which table contains customer transactions,
-transaction amount and status?
-```
-
-The retrieval system identifies:
-
-```text
-sales_schema.txt
-customers_schema.txt
-regions_schema.txt
-```
-
-The most relevant schema is then provided to the LLM.
-
----
-
-## 🤖 SQL Generation
-
-The LLM receives:
-
-```text
-User Question
-+
-Retrieved Database Schema
-+
-Business Rules
-```
-
-and generates PostgreSQL SQL.
-
-Example question:
-
-```text
-Which region generated the highest sales?
-```
-
-Generated SQL:
-
-```sql
-SELECT
-    r.region_name,
-    SUM(s.amount) AS total_sales
-FROM sales s
-JOIN customers c
-    ON s.customer_id = c.customer_id
-JOIN regions r
-    ON c.region_id = r.region_id
-WHERE s.status = 'completed'
-GROUP BY r.region_name
-ORDER BY total_sales DESC
-LIMIT 1;
-```
-
----
-
-## 🔒 SQL Safety
-
-The project contains a SQL validation layer.
+### 🔹 SQL Safety Validation
 
 Only read-only `SELECT` queries are allowed.
 
@@ -339,48 +131,203 @@ GRANT
 REVOKE
 ```
 
-Example:
+### 🔹 Google ADK
+
+Google Agent Development Kit is used to create the agent layer and expose database capabilities as tools.
+
+ADK tools include:
+
+* Schema retrieval
+* SQL generation
+* SQL validation
+* SQL execution
+
+### 🔹 LangGraph
+
+LangGraph manages the state-based NL2SQL workflow:
 
 ```text
-SELECT 1;
+START
+  ↓
+Retrieve Schema
+  ↓
+Generate SQL
+  ↓
+Validate SQL
+  ↓
+Execute SQL
+  ↓
+Format Answer
+  ↓
+END
 ```
 
-Result:
+### 🔹 PostgreSQL Query Caching
+
+Previously executed questions and results can be stored in PostgreSQL.
+
+For repeated questions:
 
 ```text
-Allowed
+User Question
+      ↓
+Cache Check
+   ↙       ↘
+ HIT       MISS
+  ↓          ↓
+Return    NL2SQL Pipeline
+Result        ↓
+           PostgreSQL
+              ↓
+           Save Cache
 ```
 
-Example:
+### 🔹 FastAPI
 
-```text
-DROP TABLE sales;
-```
+FastAPI provides the REST API layer for the NL2SQL assistant.
 
-Result:
+### 🔹 Interactive Web UI
 
-```text
-Rejected
-```
+The project includes a simple web interface where users can:
 
-This prevents destructive SQL generated by the LLM from being executed.
+* Enter natural-language questions
+* Submit questions
+* View generated SQL
+* View database results
+* View final answers
+
+### 🔹 DeepEval
+
+DeepEval is used to evaluate the quality of the NL2SQL/RAG pipeline.
+
+Evaluation metrics include:
+
+* NL2SQL Answer Correctness
+* Answer Relevancy
+* Contextual Relevancy
 
 ---
 
-## 🧪 Example End-to-End Flow
+## 🗂️ Project Structure
+
+```text
+NL2SQL-Assistant/
+│
+├── app/
+│   │
+│   ├── adk_agent/
+│   │   ├── __init__.py
+│   │   ├── agent.py
+│   │   └── tools.py
+│   │
+│   ├── agentic_pipeline.py
+│   ├── answer_formatter.py
+│   ├── cache_service.py
+│   ├── database.py
+│   ├── embedding_service.py
+│   ├── llm_service.py
+│   ├── main.py
+│   ├── nl2sql_pipeline.py
+│   ├── retrieval.py
+│   ├── sql_executor.py
+│   └── test_deepeval.py
+│
+├── knowledge/
+│   ├── customers_schema.txt
+│   ├── products_schema.txt
+│   ├── regions_schema.txt
+│   └── sales_schema.txt
+│
+├── static/
+│   └── index.html
+│
+├── .gitignore
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 🧠 Database Knowledge Base
+
+The project currently uses four schema documents:
+
+```text
+customers_schema.txt
+products_schema.txt
+regions_schema.txt
+sales_schema.txt
+```
+
+These documents contain:
+
+* Table descriptions
+* Column definitions
+* Relationships
+* Business rules
+
+For example, the sales schema contains the business rule that revenue calculations should use completed transactions.
+
+---
+
+## 🗄️ PostgreSQL Database
+
+The project uses PostgreSQL with the `pgvector` extension.
+
+### Enable pgvector
+
+```sql
+CREATE EXTENSION vector;
+```
+
+### Knowledge Embedding Table
+
+```sql
+CREATE TABLE knowledge_embeddings (
+    id BIGSERIAL PRIMARY KEY,
+    content TEXT NOT NULL,
+    source TEXT NOT NULL,
+    metadata JSONB,
+    embedding VECTOR(1536),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+The schema documents are converted into embeddings and stored in this table.
+
+---
+
+## 🔍 Semantic Retrieval
+
+When the user asks a question:
+
+```text
+User Question
+      ↓
+Create Query Embedding
+      ↓
+pgvector Similarity Search
+      ↓
+Top-K Relevant Documents
+      ↓
+Database Context
+```
+
+The project uses pgvector distance search:
+
+```sql
+ORDER BY embedding <=> query_embedding
+LIMIT 3;
+```
+
+---
+
+## 🧮 Example Query
 
 ### User Question
 
 ```text
 Which region generated the highest sales?
-```
-
-### Retrieved Context
-
-```text
-regions_schema.txt
-sales_schema.txt
-customers_schema.txt
 ```
 
 ### Generated SQL
@@ -400,7 +347,7 @@ ORDER BY total_sales DESC
 LIMIT 1;
 ```
 
-### Database Result
+### Result
 
 ```text
 Southeast
@@ -410,262 +357,60 @@ Southeast
 ### Final Answer
 
 ```text
-Southeast has the highest sales with 6,898,582,484.18.
+Southeast has the highest value with 6,898,582,484.18.
 ```
 
 ---
 
-## 📁 Project Structure
+## 🛡️ SQL Security
 
-```text
-NL2SQL-Assistant/
-│
-├── app/
-│   ├── __init__.py
-│   ├── database.py
-│   ├── embedding_service.py
-│   ├── generate_data.py
-│   ├── ingest_knowledge.py
-│   ├── llm_service.py
-│   ├── main.py
-│   ├── nl2sql_pipeline.py
-│   ├── retrieval.py
-│   ├── schema_inspector.py
-│   ├── sql_executor.py
-│   ├── answer_formatter.py
-│   ├── test_db.py
-│   ├── test_embedding.py
-│   └── test_llm.py
-│
-├── knowledge/
-│   ├── customers_schema.txt
-│   ├── products_schema.txt
-│   ├── regions_schema.txt
-│   └── sales_schema.txt
-│
-├── static/
-│   └── index.html
-│
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
+The generated SQL is validated before execution.
 
----
-
-## ⚙️ Setup
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/v1i1n1/nl2sql-assistant.git
-cd nl2sql-assistant
-```
-
----
-
-### 2. Create a virtual environment
-
-```powershell
-python -m venv venv
-```
-
-Activate it:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
----
-
-### 3. Install dependencies
-
-```powershell
-pip install -r requirements.txt
-```
-
----
-
-## 🐘 PostgreSQL Setup
-
-Make sure PostgreSQL is installed and running.
-
-Create the database:
-
-```sql
-CREATE DATABASE nl2sql_db;
-```
-
-Connect to it:
-
-```text
-nl2sql_db
-```
-
-The project uses:
-
-```text
-Host     : localhost
-Port     : 5432
-Database : nl2sql_db
-User     : postgres
-```
-
----
-
-## 🔐 Environment Variables
-
-Create a `.env` file in the project root.
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=nl2sql_db
-DB_USER=postgres
-DB_PASSWORD=your_postgres_password
-
-OPENAI_API_KEY=your_openai_api_key
-```
-
-### Important
-
-Never commit `.env` to GitHub.
-
-The `.gitignore` file excludes it from version control.
-
----
-
-## 📦 Generate Synthetic Data
-
-The project includes a Faker-based data generation script.
-
-From the `app` directory:
-
-```powershell
-python generate_data.py
-```
-
-The script generates:
-
-```text
-10 regions
-100,000 customers
-10,000 products
-1,000,000 sales
-```
-
----
-
-## 🧠 Enable pgvector
-
-The project uses PostgreSQL's pgvector extension.
-
-Inside `nl2sql_db`:
-
-```sql
-CREATE EXTENSION vector;
-```
-
-Verify:
-
-```sql
-\dx
-```
-
-You should see:
-
-```text
-vector
-```
-
----
-
-## 📚 Ingest Knowledge
-
-After the knowledge documents are available:
-
-```powershell
-python ingest_knowledge.py
-```
-
-Verify the embeddings:
+Only queries beginning with:
 
 ```sql
 SELECT
-    source,
-    vector_dims(embedding)
-FROM knowledge_embeddings;
 ```
 
-Expected dimension:
+are allowed.
+
+Destructive operations are rejected before they reach PostgreSQL.
+
+Example:
 
 ```text
-1536
+DROP TABLE sales;
 ```
 
----
-
-## 🔎 Test Semantic Retrieval
-
-Run:
-
-```powershell
-python retrieval.py
-```
-
-The system retrieves the most relevant schema documents for a natural-language question.
-
----
-
-## 🤖 Test LLM SQL Generation
-
-Run:
-
-```powershell
-python test_llm.py
-```
-
-This verifies that the LLM can generate PostgreSQL SQL using the provided schema context.
-
----
-
-## 🔄 Test Complete NL2SQL Pipeline
-
-Run:
-
-```powershell
-python nl2sql_pipeline.py
-```
-
-The complete flow is:
+Result:
 
 ```text
-Question
-   ↓
-Embedding
-   ↓
-RAG Retrieval
-   ↓
-LLM SQL Generation
-   ↓
-SQL Validation
-   ↓
-PostgreSQL Execution
-   ↓
-Answer
+ValueError: Only SELECT queries are allowed.
 ```
 
 ---
 
-## 🚀 Run FastAPI
+## 🤖 Google ADK Agent
 
-From the `app` directory:
+The ADK agent exposes the following tools:
 
-```powershell
-uvicorn main:app --reload
+```text
+retrieve_schema()
+        ↓
+generate_database_sql()
+        ↓
+validate_database_sql()
+        ↓
+execute_database_sql()
 ```
 
-The application will start at:
+The ADK Web interface can be started using:
+
+```powershell
+adk web
+```
+
+Open:
 
 ```text
 http://127.0.0.1:8000
@@ -673,17 +418,77 @@ http://127.0.0.1:8000
 
 ---
 
-## 📖 API Documentation
+## 🔄 LangGraph Workflow
 
-FastAPI automatically provides Swagger documentation.
+The LangGraph workflow is implemented using a state-based graph.
+
+```text
+START
+  │
+  ▼
+retrieve
+  │
+  ▼
+generate_sql
+  │
+  ▼
+validate_sql
+  │
+  ▼
+execute_sql
+  │
+  ▼
+format_answer
+  │
+  ▼
+END
+```
+
+Run the LangGraph pipeline:
+
+```powershell
+cd F:\NL2SQL-Assistant\app
+python agentic_pipeline.py
+```
+
+---
+
+## ⚡ PostgreSQL Caching
+
+The project includes a PostgreSQL-backed cache.
+
+Cached information includes:
+
+```text
+question
+sql
+answer
+columns
+rows
+created_at
+last_used_at
+```
+
+This reduces unnecessary repeated processing for previously asked questions.
+
+---
+
+## 🌐 FastAPI
+
+Start the FastAPI application:
+
+```powershell
+cd F:\NL2SQL-Assistant\app
+uvicorn main:app --reload
+```
 
 Open:
 
 ```text
-http://127.0.0.1:8000/docs
+http://127.0.0.1:8000
 ```
 
-### Endpoint
+### API Endpoint
 
 ```text
 POST /ask
@@ -721,21 +526,7 @@ Example response:
 
 ## 🖥️ Web UI
 
-The project includes a modern web interface built with HTML, CSS, and JavaScript.
-
-After starting FastAPI:
-
-```powershell
-cd app
-uvicorn main:app --reload
-
-Open:
-
-```text
-http://127.0.0.1:8000
-```
-
-The UI allows users to:
+The web UI allows users to:
 
 * Enter natural-language questions
 * Submit questions to the API
@@ -743,100 +534,246 @@ The UI allows users to:
 * View database results
 * View the final natural-language answer
 
----
+Start FastAPI:
 
-## 🧪 Example Questions
-
-The assistant can handle questions such as:
-
-```text
-Which region generated the highest sales?
+```powershell
+uvicorn main:app --reload
 ```
 
-```text
-Which product generated the highest sales?
-```
+Then open:
 
 ```text
-Which customer spent the most?
-```
-
-```text
-How many completed sales transactions are there?
-```
-
-```text
-What is the total amount of completed sales?
-```
-
-```text
-What were the total completed sales in July 2026?
-```
-
-```text
-Which region had the highest completed sales in July 2026?
-```
-
-```text
-Show the total completed sales for each region.
+http://127.0.0.1:8000
 ```
 
 ---
 
-## 🔐 Security Considerations
+## 📊 DeepEval Evaluation
 
-* API keys are stored in environment variables.
-* `.env` is excluded from Git.
-* SQL execution is restricted to read-only queries.
-* Destructive SQL operations are rejected before execution.
-* The LLM is instructed to use only retrieved schema information.
+DeepEval is used to evaluate the NL2SQL pipeline using three test cases.
+
+### Test Questions
+
+```text
+1. Which region generated the highest sales?
+
+2. Which region has the most customers?
+
+3. Which product generated the highest sales?
+```
+
+### Evaluation Results
+
+| Metric                    | Average Score |  Pass Rate |
+| ------------------------- | ------------: | ---------: |
+| NL2SQL Answer Correctness |      **1.00** |   **100%** |
+| Answer Relevancy          |      **0.83** | **66.67%** |
+| Contextual Relevancy      |      **0.46** |     **0%** |
+
+### Interpretation
+
+**NL2SQL Answer Correctness: 1.00**
+
+All three test cases produced the expected answers.
+
+**Answer Relevancy: 0.83**
+
+The generated answers were generally relevant to the questions.
+
+**Contextual Relevancy: 0.46**
+
+This indicates an area for future RAG optimization. The current retrieval can return additional schema information that is not directly required for a specific question.
+
+### Run Evaluation
+
+```powershell
+cd F:\NL2SQL-Assistant\app
+python test_deepeval.py
+```
 
 ---
 
-## 📈 Future Improvements
+## ⚙️ Installation
 
-Potential enhancements include:
+### 1. Clone the repository
 
-* Improved SQL validation
-* Better handling of ambiguous questions
-* Query retry and correction
-* Conversation memory
-* Query history
-* Authentication
-* Better natural-language answer generation
-* Result visualization and charts
-* Query performance optimization
-* Production deployment
-* Improved schema retrieval using relationship-aware retrieval
+```powershell
+git clone https://github.com/v1i1n1/nl2sql-assistant.git
+```
+
+```powershell
+cd nl2sql-assistant
+```
+
+### 2. Create virtual environment
+
+```powershell
+python -m venv venv
+```
+
+### 3. Activate virtual environment
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### 4. Install dependencies
+
+```powershell
+pip install -r requirements.txt
+```
 
 ---
 
-## 👨‍💻 Project
+## 🔐 Environment Variables
 
-**NL2SQL Assistant**
+Create a `.env` file in the project root.
 
-A practical implementation of:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=nl2sql_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+
+OPENAI_API_KEY=your_openai_api_key
+
+GOOGLE_API_KEY=your_google_api_key
+```
+
+### Important
+
+Never commit `.env` to GitHub.
+
+The project includes `.env` in `.gitignore`.
+
+---
+
+## 🧪 Testing
+
+### Test Embeddings
+
+```powershell
+python test_embedding.py
+```
+
+### Test Retrieval
+
+```powershell
+python retrieval.py
+```
+
+### Test SQL Generation
+
+```powershell
+python test_llm.py
+```
+
+### Test Full NL2SQL Pipeline
+
+```powershell
+python nl2sql_pipeline.py
+```
+
+### Test SQL Validation
+
+```powershell
+python -c "from sql_executor import validate_sql; print(validate_sql('SELECT 1;'))"
+```
+
+### Test LangGraph
+
+```powershell
+python agentic_pipeline.py
+```
+
+### Test DeepEval
+
+```powershell
+python test_deepeval.py
+```
+
+### Run Google ADK
+
+```powershell
+adk web
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Technology          | Purpose                  |
+| ------------------- | ------------------------ |
+| Python              | Application development  |
+| PostgreSQL          | Relational database      |
+| pgvector            | Vector similarity search |
+| OpenAI Embeddings   | Schema embeddings        |
+| GPT-4.1-mini        | SQL generation           |
+| Google ADK          | Agent orchestration      |
+| LangGraph           | Workflow orchestration   |
+| FastAPI             | REST API                 |
+| HTML/CSS/JavaScript | Web UI                   |
+| DeepEval            | LLM/RAG evaluation       |
+| Git/GitHub          | Version control          |
+
+---
+
+## 🔮 Future Improvements
+
+Potential future enhancements include:
+
+* Improve schema chunking for better contextual retrieval
+* Improve answer formatting based on column semantics
+* Add SQL retry and correction workflows
+* Add more comprehensive evaluation datasets
+* Add authentication and authorization
+* Add Docker deployment
+* Add production monitoring
+* Add more advanced multi-agent workflows
+* Improve cache invalidation strategies
+* Deploy the application to AWS
+
+---
+
+## 🎯 Project Highlights
+
+This project demonstrates an end-to-end **agentic NL2SQL architecture** combining:
 
 ```text
 RAG
 +
-LLM
+Vector Search
 +
-PostgreSQL
+LLM SQL Generation
 +
-pgvector
+SQL Safety
++
+LangGraph
++
+Google ADK
++
+PostgreSQL Caching
 +
 FastAPI
 +
-Natural Language SQL
+DeepEval
 ```
+
+The system is designed to safely transform natural-language business questions into executable PostgreSQL queries while grounding SQL generation in the database schema and business rules.
 
 ---
 
-## 📌 Version
+## 👨‍💻 Author
 
-```text
-Version: 1.0
-Status: Working End-to-End
-```
+**Vinod Raj**
+
+AI / ML | Generative AI | RAG | LLM Applications | Agentic AI
+
+---
+
+## 📄 License
+
+This project is intended for learning, demonstration, and portfolio purposes.
+
 
