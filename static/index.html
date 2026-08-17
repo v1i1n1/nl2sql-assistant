@@ -274,6 +274,30 @@
             color: #f8fafc;
         }
 
+        .cache-status {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 14px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .cache-hit {
+            background: rgba(34, 197, 94, 0.12);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .cache-miss {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
         /* TWO COLUMN */
 
         .grid {
@@ -571,6 +595,12 @@
             >
             </div>
 
+            <div
+                class="cache-status"
+                id="cacheStatus"
+            >
+            </div>
+
         </div>
 
 
@@ -711,6 +741,25 @@ async function askQuestion() {
 
         document.getElementById("answer")
             .innerText = data.answer || "No answer returned.";
+
+        const cacheStatus =
+            document.getElementById("cacheStatus");
+
+        cacheStatus.className = "cache-status";
+
+        if (data.cache_hit) {
+            cacheStatus.classList.add("cache-hit");
+
+            cacheStatus.innerText =
+                "CACHE HIT · Answer served from saved result";
+
+        } else {
+            cacheStatus.classList.add("cache-miss");
+
+            cacheStatus.innerText =
+                "CACHE MISS · Query processed and saved";
+
+        }
 
 
         document.getElementById("sql")

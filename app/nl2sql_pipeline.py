@@ -2,6 +2,7 @@ from retrieval import retrieve_documents
 from llm_service import generate_sql
 from sql_executor import execute_sql
 from answer_formatter import format_answer
+from cache_service import get_cached_result, save_cached_result
 
 
 def build_context(results):
